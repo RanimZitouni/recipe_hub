@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\CategorieRecetteRepository;
@@ -7,8 +6,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: CategorieRecetteRepository::class)]
+#[UniqueEntity(fields: ['nom'], message: 'Cette catégorie existe déjà.')]
 class CategorieRecette
 {
     #[ORM\Id]
@@ -17,6 +19,7 @@ class CategorieRecette
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 10, nullable: true)]
@@ -49,7 +52,6 @@ class CategorieRecette
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
         return $this;
     }
 
@@ -61,7 +63,6 @@ class CategorieRecette
     public function setIcone(?string $icone): static
     {
         $this->icone = $icone;
-
         return $this;
     }
 
@@ -73,7 +74,6 @@ class CategorieRecette
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -91,19 +91,16 @@ class CategorieRecette
             $this->recettes->add($recette);
             $recette->setCategorie($this);
         }
-
         return $this;
     }
 
     public function removeRecette(Recette $recette): static
     {
         if ($this->recettes->removeElement($recette)) {
-            // set the owning side to null (unless already changed)
             if ($recette->getCategorie() === $this) {
                 $recette->setCategorie(null);
             }
         }
-
         return $this;
     }
 }
