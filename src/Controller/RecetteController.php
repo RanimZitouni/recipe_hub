@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\Ingredient;
 use App\Entity\Recette;
+use App\Entity\User;
 use App\Form\IngredientType;
 use App\Form\RecetteType;
 use App\Repository\RecetteRepository;
@@ -12,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
@@ -23,8 +24,9 @@ class RecetteController extends AbstractController
             'recettes' => $repo->findAll(),
         ]);
     }
-
     #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_CUISINIER')]
+
     public function nouvelle(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $recette = new Recette();
@@ -65,6 +67,11 @@ class RecetteController extends AbstractController
     #[Route('/{id}/modifier', name: 'recette_modifier', methods: ['GET', 'POST'])]
     public function modifier(Request $request, Recette $recette, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User || (!$this->isGranted('ROLE_ADMIN') && $recette->getAuteur()?->getId() !== $currentUser->getId())) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette recette.');
+        }
+
         $form = $this->createForm(RecetteType::class, $recette);
         $form->handleRequest($request);
 
@@ -91,6 +98,11 @@ class RecetteController extends AbstractController
     #[Route('/{id}/supprimer', name: 'recette_supprimer', methods: ['POST'])]
     public function supprimer(Request $request, Recette $recette, EntityManagerInterface $em): Response
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User || (!$this->isGranted('ROLE_ADMIN') && $recette->getAuteur()?->getId() !== $currentUser->getId())) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette recette.');
+        }
+
         if ($this->isCsrfTokenValid('supprimer' . $recette->getId(), $request->request->get('_token'))) {
             $em->remove($recette);
             $em->flush();
@@ -102,6 +114,11 @@ class RecetteController extends AbstractController
     #[Route('/{id}/ingredients/nouveau', name: 'ingredient_nouveau', methods: ['GET', 'POST'])]
     public function nouvelIngredient(Request $request, Recette $recette, EntityManagerInterface $em): Response
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser instanceof User || (!$this->isGranted('ROLE_ADMIN') && $recette->getAuteur()?->getId() !== $currentUser->getId())) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette recette.');
+        }
+
         $ingredient = new Ingredient();
         $form = $this->createForm(IngredientType::class, $ingredient);
         $form->handleRequest($request);

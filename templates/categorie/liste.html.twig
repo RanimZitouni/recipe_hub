@@ -4,7 +4,9 @@
 {% block body %}
 <div class="d-flex justify-content-between mb-4">
     <h1>📂 Catégories</h1>
-    <a href="{{ path('categorie_nouvelle') }}" class="btn btn-success">+ Nouvelle</a>
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('categorie_nouvelle') }}" class="btn btn-success">+ Nouvelle</a>
+    {% endif %}
 </div>
 <div class="row row-cols-1 row-cols-md-3 g-3">
 {% for categorie in categories %}

@@ -69,15 +69,17 @@
                         <a href="{{ path('recette_detail', {id: recette.id}) }}" class="btn-voir">
                             <i class="fas fa-eye me-1"></i>Voir
                         </a>
-                        <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
-                            <i class="fas fa-edit me-1"></i>Modifier
-                        </a>
-                        <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
-                              onsubmit="return confirm('Supprimer ?')">
-                            <input type="hidden" name="_token"
-                                   value="{{ csrf_token('supprimer' ~ recette.id) }}">
-                            <button class="btn-suppr"><i class="fas fa-trash"></i></button>
-                        </form>
+                        {% if app.user and (is_granted('ROLE_ADMIN') or (recette.auteur and recette.auteur.id == app.user.id)) %}
+                            <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
+                                  onsubmit="return confirm('Supprimer ?')">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('supprimer' ~ recette.id) }}">
+                                <button class="btn-suppr"><i class="fas fa-trash"></i></button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
