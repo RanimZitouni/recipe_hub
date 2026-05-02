@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recettes — RecipeHub{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>🍽️ Toutes les recettes</h1>
+    <a href="{{ path('recette_nouvelle') }}" class="btn btn-success">+ Nouvelle recette</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+{% for recette in recettes %}
+    <div class="col">
+        <div class="card h-100">
+            {% if recette.imageName %}
+                <img src="{{ asset('uploads/images/' ~ recette.imageName) }}" class="card-img-top" style="height:200px;object-fit:cover;" alt="{{ recette.titre }}">
+            {% else %}
+                <div class="bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
+                    <span class="text-white fs-1">🍽️</span>
+                </div>
+            {% endif %}
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ recette.titre }}</h5>
+                    {% if recette.difficulte == 'facile' %}
+                        <span class="badge bg-success">🟢 Facile</span>
+                    {% elseif recette.difficulte == 'moyen' %}
+                        <span class="badge bg-warning text-dark">🟡 Moyen</span>
+                    {% else %}
+                        <span class="badge bg-danger">🔴 Difficile</span>
+                    {% endif %}
+                </div>
+
+                {% if recette.categorie %}
+                    <p class="text-muted small mb-1">
+                        {{ recette.categorie.icone }} {{ recette.categorie.nom }}
+                    </p>
+                {% endif %}
+
+                <p class="text-muted small">
+                    ⏱️ {{ recette.tempsPreparation + (recette.tempsCuisson ?? 0) }} min
+                    | 👥 {{ recette.nbPersonnes }} pers.
+                </p>
+
+                <div class="mb-2">
+                    {% for tag in recette.tags %}
+                        <span class="badge" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card-footer d-flex gap-2">
+                <a href="{{ path('recette_detail', {id: recette.id}) }}" class="btn btn-primary btn-sm flex-fill">Voir</a>
+                <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn btn-warning btn-sm flex-fill">Modifier</a>
+                <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}" onsubmit="return confirm('Supprimer ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('supprimer' ~ recette.id) }}">
+                    <button class="btn btn-danger btn-sm">🗑️</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12">
+        <div class="alert alert-info">Aucune recette pour le moment. <a href="{{ path('recette_nouvelle') }}">Créez-en une !</a></div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

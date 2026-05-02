@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ titre }}{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header"><h4>{{ titre }}</h4></div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                    <div class="row g-3">
+                        <div class="col-12">{{ form_row(form.titre) }}</div>
+                        <div class="col-12">{{ form_row(form.description) }}</div>
+                        <div class="col-12">{{ form_row(form.instructions) }}</div>
+                        <div class="col-md-4">{{ form_row(form.tempsPreparation) }}</div>
+                        <div class="col-md-4">{{ form_row(form.tempsCuisson) }}</div>
+                        <div class="col-md-4">{{ form_row(form.nbPersonnes) }}</div>
+                        <div class="col-md-6">{{ form_row(form.difficulte) }}</div>
+                        <div class="col-md-6">{{ form_row(form.categorie) }}</div>
+                        <div class="col-12">{{ form_row(form.tags) }}</div>
+                        <div class="col-12">{{ form_row(form.imageFile) }}</div>
+                        <div class="col-12">{{ form_row(form.publiee) }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-success">💾 Enregistrer</button>
+                        <a href="{{ path('recette_liste') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

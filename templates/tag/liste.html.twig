@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tags{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between mb-4">
+    <h1>🏷️ Tags</h1>
+    <a href="{{ path('tag_nouveau') }}" class="btn btn-success">+ Nouveau tag</a>
+</div>
+<div class="row row-cols-1 row-cols-md-4 g-3">
+{% for tag in tags %}
+    <div class="col">
+        <div class="card h-100 text-center p-3">
+            <span class="badge fs-5 mb-2" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
+            <form method="post" action="{{ path('tag_supprimer', {id: tag.id}) }}" onsubmit="return confirm('Supprimer ce tag ?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('supprimer' ~ tag.id) }}">
+                <button class="btn btn-danger btn-sm">🗑️ Supprimer</button>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12"><div class="alert alert-info">Aucun tag.</div></div>
+{% endfor %}
+</div>
+{% endblock %}
