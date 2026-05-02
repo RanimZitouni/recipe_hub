@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/categories')]
 class CategorieController extends AbstractController
@@ -22,6 +23,7 @@ class CategorieController extends AbstractController
     }
 
     #[Route('/nouvelle', name: 'categorie_nouvelle', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function nouvelle(Request $request, EntityManagerInterface $em): Response
     {
         $categorie = new CategorieRecette();

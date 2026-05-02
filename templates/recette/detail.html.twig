@@ -73,8 +73,10 @@
             <div class="form-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="section-title mb-0">🧂 Ingrédients</h4>
-                    <a href="{{ path('ingredient_nouveau', {id: recette.id}) }}"
-                       class="btn-voir" style="font-size:12px;">+ Ajouter</a>
+                    {% if app.user and (is_granted('ROLE_ADMIN') or (recette.auteur and recette.auteur.id == app.user.id)) %}
+                        <a href="{{ path('ingredient_nouveau', {id: recette.id}) }}"
+                           class="btn-voir" style="font-size:12px;">+ Ajouter</a>
+                    {% endif %}
                 </div>
                 <ul class="list-unstyled">
                     {% for ingredient in recette.ingredients %}
@@ -86,13 +88,15 @@
                         </span>
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-light text-dark">{{ ingredient.quantite }}</span>
-                            <form method="post" action="{{ path('ingredient_supprimer', {id: ingredient.id}) }}">
-                                <input type="hidden" name="_token"
-                                       value="{{ csrf_token('supprimer' ~ ingredient.id) }}">
-                                <button class="btn-suppr" style="padding:2px 8px;font-size:11px;">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
+                            {% if app.user and (is_granted('ROLE_ADMIN') or (recette.auteur and recette.auteur.id == app.user.id)) %}
+                                <form method="post" action="{{ path('ingredient_supprimer', {id: ingredient.id}) }}">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('supprimer' ~ ingredient.id) }}">
+                                    <button class="btn-suppr" style="padding:2px 8px;font-size:11px;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
                     </li>
                     {% else %}
@@ -112,18 +116,20 @@
         </div>
     </div>
 
-    <div class="d-flex gap-3 mt-4">
-        <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
-            <i class="fas fa-edit me-2"></i>Modifier la recette
-        </a>
-        <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
-              onsubmit="return confirm('Supprimer cette recette ?')">
-            <input type="hidden" name="_token"
-                   value="{{ csrf_token('supprimer' ~ recette.id) }}">
-            <button class="btn-suppr" style="padding:10px 20px;font-size:15px;">
-                <i class="fas fa-trash me-2"></i>Supprimer
-            </button>
-        </form>
-    </div>
+    {% if app.user and (is_granted('ROLE_ADMIN') or (recette.auteur and recette.auteur.id == app.user.id)) %}
+        <div class="d-flex gap-3 mt-4">
+            <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
+                <i class="fas fa-edit me-2"></i>Modifier la recette
+            </a>
+            <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
+                  onsubmit="return confirm('Supprimer cette recette ?')">
+                <input type="hidden" name="_token"
+                       value="{{ csrf_token('supprimer' ~ recette.id) }}">
+                <button class="btn-suppr" style="padding:10px 20px;font-size:15px;">
+                    <i class="fas fa-trash me-2"></i>Supprimer
+                </button>
+            </form>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

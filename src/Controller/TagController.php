@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/tags')]
 class TagController extends AbstractController
@@ -22,6 +23,7 @@ class TagController extends AbstractController
     }
 
     #[Route('/nouveau', name: 'tag_nouveau', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function nouveau(Request $request, EntityManagerInterface $em): Response
     {
         $tag = new TagRecette();
@@ -41,6 +43,7 @@ class TagController extends AbstractController
     }
 
     #[Route('/{id}/supprimer', name: 'tag_supprimer', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function supprimer(Request $request, TagRecette $tag, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('supprimer' . $tag->getId(), $request->request->get('_token'))) {
