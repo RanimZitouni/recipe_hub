@@ -5,43 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}RecipeHub{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: bold; font-size: 1.5rem; }
-        .card { transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        footer { background-color: #343a40; color: white; padding: 2rem 0; margin-top: 3rem; }
+        body { font-family: 'Poppins', sans-serif; background:#f8f9fa; }
+        .navbar-custom { background: #4d4d4dff; padding: 12px 0; }
+        .navbar-custom .navbar-brand { color:#fff; font-size:22px; font-weight:700; }
+        .navbar-custom .nav-link { color:rgba(255,255,255,0.85) !important; font-weight:500; }
+        .navbar-custom .nav-link:hover { color:#fff !important; }
+        .btn-nouvelle { background:#fff; color:#c0392b; border-radius:25px; font-weight:600; padding:6px 20px; }
+        .btn-nouvelle:hover { background:#f8f9fa; color:#c0392b; }
+        .hero-section { background: linear-gradient(135deg, #c5918bff 0%, #e74c3c 50%, #f39c12 100%); padding:80px 0; color:#fff; }
+        .hero-section h1 { font-size:42px; font-weight:700; }
+        .hero-section p { font-size:18px; opacity:0.9; }
+        .btn-hero { background:#fff; color:#c0392b; border-radius:30px; padding:12px 35px; font-weight:700; font-size:16px; border:none; }
+        .btn-hero:hover { background:#f8f9fa; color:#c0392b; }
+        .section-title { font-size:28px; font-weight:700; color:#2c3e50; position:relative; padding-bottom:12px; }
+        .section-title::after { content:''; position:absolute; bottom:0; left:0; width:50px; height:3px; background:#e74c3c; border-radius:2px; }
+        .section-title.text-center::after { left:50%; transform:translateX(-50%); }
+        .recipe-card { border:none; border-radius:16px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08); transition:transform 0.3s, box-shadow 0.3s; background:#fff; }
+        .recipe-card:hover { transform:translateY(-8px); box-shadow:0 12px 30px rgba(0,0,0,0.15); }
+        .recipe-card .card-img-top { height:220px; object-fit:cover; }
+        .recipe-card .card-img-placeholder { height:220px; background:linear-gradient(135deg,#fdecea,#fff3e0); display:flex; align-items:center; justify-content:center; font-size:60px; }
+        .badge-facile { background:#e8f5e9; color:#2e7d32; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+        .badge-moyen { background:#fff8e1; color:#f57f17; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+        .badge-difficile { background:#ffebee; color:#c62828; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+        .card-meta { font-size:13px; color:#888; }
+        .btn-voir { background:#e74c3c; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; }
+        .btn-voir:hover { background:#c0392b; color:#fff; }
+        .btn-modifier { background:#f39c12; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; }
+        .btn-modifier:hover { background:#e67e22; color:#fff; }
+        .btn-suppr { background:#95a5a6; color:#fff; border:none; border-radius:8px; padding:6px 12px; font-size:13px; }
+        .btn-suppr:hover { background:#7f8c8d; color:#fff; }
+        .footer-custom { background:#2c3e50; color:#fff; padding:50px 0 20px; margin-top:60px; }
+        .footer-custom h5 { color:#e74c3c; font-weight:700; margin-bottom:20px; }
+        .footer-custom a { color:rgba(255,255,255,0.7); text-decoration:none; display:block; margin-bottom:8px; }
+        .footer-custom a:hover { color:#e74c3c; }
+        .footer-bottom { border-top:1px solid rgba(255,255,255,0.1); padding-top:20px; margin-top:30px; text-align:center; color:rgba(255,255,255,0.5); font-size:13px; }
+        .form-card { background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); padding:30px; }
+        .page-header { background:linear-gradient(135deg,#c0392b,#e74c3c); color:#fff; padding:40px 0; margin-bottom:40px; }
+        .page-header h1 { font-weight:700; }
+       
+.hero-fullscreen {
+    height: 100vh;
+    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600') center center / cover no-repeat;
+    position: relative;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(186, 139, 134, 0.75), rgba(243,156,18,0.6));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-content h1 {
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.hero-content p {
+    font-size: 20px;
+    color: rgba(255,255,255,0.9);
+    margin: 16px 0 30px;
+}
+
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+body > .container {
+    flex: 1;
+}
+.footer-custom {
+    margin-top: auto !important;
+}
     </style>
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<body style="display:flex;flex-direction:column;min-height:100vh;">
+
+<nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="{{ path('recette_liste') }}">🍽️ RecipeHub</a>
-        <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="{{ path('recette_liste') }}">Recettes</a>
-            <a class="nav-link" href="{{ path('recette_nouvelle') }}">+ Nouvelle</a>
-            <a class="nav-link" href="{{ path('categorie_liste') }}">Catégories</a>
-            <a class="nav-link" href="{{ path('tag_liste') }}">Tags</a>
+        <a class="navbar-brand" href="{{ path('recette_liste') }}">RecipeHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
+                <li class="nav-item"><a class="nav-link" href="{{ path('recette_liste') }}">Recettes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('categorie_liste') }}">Catégories</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ path('tag_liste') }}">Tags</a></li>
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container">
+<div class="container mt-4" style="flex:0;">
     {% for type, messages in app.flashes %}
         {% for message in messages %}
-            <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show">
+            <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3">
+                <i class="fas fa-{{ type == 'success' ? 'check-circle' : 'exclamation-circle' }} me-2"></i>
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
     {% endfor %}
-
-    {% block body %}{% endblock %}
 </div>
 
-<footer class="mt-5">
-    <div class="container text-center">
-        <p class="mb-0">© 2025 RecipeHub — Partagez vos recettes</p>
+{% block body %}{% endblock %}
+
+<footer class="footer-custom" style="margin-top:0;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <h5>RecipeHub</h5>
+                <p style="color:rgba(255,255,255,0.6);font-size:14px;">Partagez vos meilleures recettes avec la communauté. Découvrez des saveurs du monde entier.</p>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <h5>Navigation</h5>
+                <a href="{{ path('recette_liste') }}">Toutes les recettes</a>
+                <a href="{{ path('recette_nouvelle') }}">Créer une recette</a>
+                <a href="{{ path('categorie_liste') }}">Catégories</a>
+                <a href="{{ path('tag_liste') }}">Tags</a>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <h5>Suivez-nous</h5>
+                <div class="d-flex gap-3 mt-2">
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 RecipeHub — Tous droits réservés</p>
+        </div>
     </div>
 </footer>
 
