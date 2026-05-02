@@ -1,72 +1,129 @@
 {% extends 'base.html.twig' %}
-{% block title %}{{ recette.titre }}{% endblock %}
+{% block title %}{{ recette.titre }} — RecipeHub{% endblock %}
 
 {% block body %}
-<div class="mb-3">
-    <a href="{{ path('recette_liste') }}" class="btn btn-outline-secondary">← Retour</a>
-    <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn btn-warning ms-2">Modifier</a>
+<div class="page-header">
+    <div class="container">
+        <a href="{{ path('recette_liste') }}" style="color:rgba(255,255,255,0.7);text-decoration:none;">
+            <i class="fas fa-arrow-left me-2"></i>Retour aux recettes
+        </a>
+        <h1 class="mt-2">{{ recette.titre }}</h1>
+        <div class="d-flex align-items-center gap-3 mt-2">
+            {% if recette.difficulte == 'facile' %}
+                <span class="badge-facile">🟢 Facile</span>
+            {% elseif recette.difficulte == 'moyen' %}
+                <span class="badge-moyen">🟡 Moyen</span>
+            {% else %}
+                <span class="badge-difficile">🔴 Difficile</span>
+            {% endif %}
+            {% if recette.categorie %}
+                <span style="color:rgba(255,255,255,0.8)">{{ recette.categorie.icone }} {{ recette.categorie.nom }}</span>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-{% if recette.imageName %}
-    <img src="{{ asset('uploads/images/' ~ recette.imageName) }}" class="img-fluid rounded mb-4 w-100" style="max-height:400px;object-fit:cover;" alt="{{ recette.titre }}">
-{% endif %}
-
-<div class="d-flex align-items-center gap-3 mb-3">
-    <h1>{{ recette.titre }}</h1>
-    {% if recette.difficulte == 'facile' %}
-        <span class="badge bg-success fs-6">🟢 Facile</span>
-    {% elseif recette.difficulte == 'moyen' %}
-        <span class="badge bg-warning text-dark fs-6">🟡 Moyen</span>
-    {% else %}
-        <span class="badge bg-danger fs-6">🔴 Difficile</span>
+<div class="container pb-5">
+    {% if recette.imageName %}
+        <img src="{{ asset('uploads/images/' ~ recette.imageName) }}"
+             class="img-fluid rounded-4 w-100 mb-4"
+             style="max-height:450px;object-fit:cover;"
+             alt="{{ recette.titre }}">
     {% endif %}
-</div>
 
-<p class="text-muted">
-    ⏱️ Préparation : {{ recette.tempsPreparation }} min
-    {% if recette.tempsCuisson %} | 🔥 Cuisson : {{ recette.tempsCuisson }} min{% endif %}
-    | 👥 {{ recette.nbPersonnes }} personnes
-    {% if recette.categorie %} | {{ recette.categorie.icone }} {{ recette.categorie.nom }}{% endif %}
-</p>
-
-<div class="mb-3">
-    {% for tag in recette.tags %}
-        <span class="badge" style="background-color: {{ tag.couleur }}">{{ tag.nom }}</span>
-    {% endfor %}
-</div>
-
-<p>{{ recette.description }}</p>
-
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between">
-                <strong>🧂 Ingrédients</strong>
-                <a href="{{ path('ingredient_nouveau', {id: recette.id}) }}" class="btn btn-sm btn-outline-success">+ Ajouter</a>
+    <div class="row mb-4">
+        <div class="col-auto">
+            <div class="form-card text-center px-4">
+                <div style="font-size:24px">⏱️</div>
+                <div class="fw-bold">{{ recette.tempsPreparation }} min</div>
+                <div class="text-muted small">Préparation</div>
             </div>
-            <ul class="list-group list-group-flush">
-                {% for ingredient in recette.ingredients %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ ingredient.nom }} — <em>{{ ingredient.quantite }}</em></span>
-                    <form method="post" action="{{ path('ingredient_supprimer', {id: ingredient.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('supprimer' ~ ingredient.id) }}">
-                        <button class="btn btn-danger btn-sm">🗑️</button>
-                    </form>
-                </li>
-                {% else %}
-                <li class="list-group-item text-muted">Aucun ingrédient</li>
-                {% endfor %}
-            </ul>
+        </div>
+        {% if recette.tempsCuisson %}
+        <div class="col-auto">
+            <div class="form-card text-center px-4">
+                <div style="font-size:24px">🔥</div>
+                <div class="fw-bold">{{ recette.tempsCuisson }} min</div>
+                <div class="text-muted small">Cuisson</div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-auto">
+            <div class="form-card text-center px-4">
+                <div style="font-size:24px">👥</div>
+                <div class="fw-bold">{{ recette.nbPersonnes }}</div>
+                <div class="text-muted small">Personnes</div>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header"><strong>📋 Instructions</strong></div>
-            <div class="card-body">
-                <p style="white-space: pre-line">{{ recette.instructions }}</p>
+    <div class="mb-3">
+        {% for tag in recette.tags %}
+            <span class="badge rounded-pill me-1"
+                  style="background-color:{{ tag.couleur }};font-size:13px;padding:6px 14px;">
+                {{ tag.nom }}
+            </span>
+        {% endfor %}
+    </div>
+
+    <p class="lead mb-4">{{ recette.description }}</p>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="form-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="section-title mb-0">🧂 Ingrédients</h4>
+                    <a href="{{ path('ingredient_nouveau', {id: recette.id}) }}"
+                       class="btn-voir" style="font-size:12px;">+ Ajouter</a>
+                </div>
+                <ul class="list-unstyled">
+                    {% for ingredient in recette.ingredients %}
+                    <li class="d-flex justify-content-between align-items-center py-2"
+                        style="border-bottom:1px solid #f0f0f0;">
+                        <span>
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            {{ ingredient.nom }}
+                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-dark">{{ ingredient.quantite }}</span>
+                            <form method="post" action="{{ path('ingredient_supprimer', {id: ingredient.id}) }}">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('supprimer' ~ ingredient.id) }}">
+                                <button class="btn-suppr" style="padding:2px 8px;font-size:11px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="text-muted text-center py-3">Aucun ingrédient</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
+
+        <div class="col-md-8">
+            <div class="form-card h-100">
+                <h4 class="section-title mb-4">📋 Instructions</h4>
+                <p style="white-space:pre-line;line-height:1.8;color:#555;">
+                    {{ recette.instructions }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mt-4">
+        <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
+            <i class="fas fa-edit me-2"></i>Modifier la recette
+        </a>
+        <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
+              onsubmit="return confirm('Supprimer cette recette ?')">
+            <input type="hidden" name="_token"
+                   value="{{ csrf_token('supprimer' ~ recette.id) }}">
+            <button class="btn-suppr" style="padding:10px 20px;font-size:15px;">
+                <i class="fas fa-trash me-2"></i>Supprimer
+            </button>
+        </form>
     </div>
 </div>
 {% endblock %}
