@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Entity;
 
 use App\Repository\CategorieRecetteRepository;
@@ -8,7 +9,13 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ['categorie:read']],
+    denormalizationContext: ['groups' => ['categorie:write']]
+)]
 #[ORM\Entity(repositoryClass: CategorieRecetteRepository::class)]
 #[UniqueEntity(fields: ['nom'], message: 'Cette catégorie existe déjà.')]
 class CategorieRecette
@@ -16,16 +23,20 @@ class CategorieRecette
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['categorie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Groups(['categorie:read', 'categorie:write', 'recette:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 10, nullable: true)]
+    #[Groups(['categorie:read', 'categorie:write'])]
     private ?string $icone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['categorie:read', 'categorie:write'])]
     private ?string $description = null;
 
     /**

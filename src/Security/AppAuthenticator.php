@@ -53,16 +53,14 @@ class AppAuthenticator extends AbstractAuthenticator
             ]
         );
     }
-
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
-
-        // Modifiez cette ligne pour rediriger vers l'accueil
-        return new RedirectResponse($this->urlGenerator->generate('app_accueil'));
+public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+{
+    if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
+        return new RedirectResponse($targetPath);
     }
+
+    return new RedirectResponse($this->urlGenerator->generate('recette_liste'));
+}
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {

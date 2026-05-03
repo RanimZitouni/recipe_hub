@@ -8,17 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background:#f8f9fa; }
-        .navbar-custom { background: #4d4d4dff; padding: 12px 0; }
-        .navbar-custom .navbar-brand { color:#fff; font-size:22px; font-weight:700; }
-        .navbar-custom .nav-link { color:rgba(255,255,255,0.85) !important; font-weight:500; }
-        .navbar-custom .nav-link:hover { color:#fff !important; }
-        .btn-nouvelle { background:#fff; color:#c0392b; border-radius:25px; font-weight:600; padding:6px 20px; }
-        .btn-nouvelle:hover { background:#f8f9fa; color:#c0392b; }
-        .hero-section { background: linear-gradient(135deg, #c5918bff 0%, #e74c3c 50%, #f39c12 100%); padding:80px 0; color:#fff; }
+        body { font-family: 'Poppins', sans-serif; background:#f8f9fa; display:flex; flex-direction:column; min-height:100vh; }
+        .navbar-custom { background:#1a1a1a; padding:14px 0; box-shadow:0 2px 10px rgba(0,0,0,0.3); }
+        .navbar-custom .navbar-brand { color:#fff; font-size:22px; font-weight:700; letter-spacing:1px; }
+        .navbar-custom .navbar-brand span { color:#e74c3c; }
+        .navbar-custom .nav-link { color:rgba(255,255,255,0.85) !important; font-weight:500; transition:color 0.2s; padding:6px 12px !important; border-radius:6px; }
+        .navbar-custom .nav-link:hover { color:#fff !important; background:rgba(255,255,255,0.1); }
+        .btn-connexion { background:transparent; color:#fff !important; border:1px solid rgba(255,255,255,0.4); border-radius:20px; padding:6px 18px !important; }
+        .btn-connexion:hover { border-color:#e74c3c !important; color:#e74c3c !important; background:transparent; }
+        .btn-inscription { background:#e74c3c; color:#fff !important; border-radius:20px; padding:6px 18px !important; font-weight:600; }
+        .btn-inscription:hover { background:#c0392b; color:#fff !important; }
+        .btn-creer { background:#e74c3c; color:#fff !important; border-radius:20px; padding:6px 18px !important; font-weight:600; font-size:13px; }
+        .btn-creer:hover { background:#c0392b; }
+        .user-badge { color:rgba(255,255,255,0.9) !important; font-size:13px; }
+        .hero-section { background:linear-gradient(135deg,#c0392b 0%,#e74c3c 50%,#f39c12 100%); padding:80px 0; color:#fff; }
         .hero-section h1 { font-size:42px; font-weight:700; }
         .hero-section p { font-size:18px; opacity:0.9; }
-        .btn-hero { background:#fff; color:#c0392b; border-radius:30px; padding:12px 35px; font-weight:700; font-size:16px; border:none; }
+        .btn-hero { background:#fff; color:#c0392b; border-radius:30px; padding:12px 35px; font-weight:700; font-size:16px; border:none; text-decoration:none; display:inline-block; }
         .btn-hero:hover { background:#f8f9fa; color:#c0392b; }
         .section-title { font-size:28px; font-weight:700; color:#2c3e50; position:relative; padding-bottom:12px; }
         .section-title::after { content:''; position:absolute; bottom:0; left:0; width:50px; height:3px; background:#e74c3c; border-radius:2px; }
@@ -31,13 +37,13 @@
         .badge-moyen { background:#fff8e1; color:#f57f17; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; }
         .badge-difficile { background:#ffebee; color:#c62828; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:600; }
         .card-meta { font-size:13px; color:#888; }
-        .btn-voir { background:#e74c3c; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; }
+        .btn-voir { background:#e74c3c; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; text-decoration:none; display:inline-block; }
         .btn-voir:hover { background:#c0392b; color:#fff; }
-        .btn-modifier { background:#f39c12; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; }
+        .btn-modifier { background:#f39c12; color:#fff; border:none; border-radius:8px; padding:6px 16px; font-size:13px; font-weight:600; text-decoration:none; display:inline-block; }
         .btn-modifier:hover { background:#e67e22; color:#fff; }
-        .btn-suppr { background:#95a5a6; color:#fff; border:none; border-radius:8px; padding:6px 12px; font-size:13px; }
+        .btn-suppr { background:#95a5a6; color:#fff; border:none; border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
         .btn-suppr:hover { background:#7f8c8d; color:#fff; }
-        .footer-custom { background:#2c3e50; color:#fff; padding:50px 0 20px; margin-top:60px; }
+        .footer-custom { background:#2c3e50; color:#fff; padding:50px 0 20px; margin-top:auto; }
         .footer-custom h5 { color:#e74c3c; font-weight:700; margin-bottom:20px; }
         .footer-custom a { color:rgba(255,255,255,0.7); text-decoration:none; display:block; margin-bottom:8px; }
         .footer-custom a:hover { color:#e74c3c; }
@@ -45,80 +51,79 @@
         .form-card { background:#fff; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); padding:30px; }
         .page-header { background:linear-gradient(135deg,#c0392b,#e74c3c); color:#fff; padding:40px 0; margin-bottom:40px; }
         .page-header h1 { font-weight:700; }
-       
-.hero-fullscreen {
-    height: 100vh;
-    background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600') center center / cover no-repeat;
-    position: relative;
-}
-.hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(186, 139, 134, 0.75), rgba(243,156,18,0.6));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.hero-content h1 {
-    font-size: 52px;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-.hero-content p {
-    font-size: 20px;
-    color: rgba(255,255,255,0.9);
-    margin: 16px 0 30px;
-}
-
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(10px); }
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-body > .container {
-    flex: 1;
-}
-.footer-custom {
-    margin-top: auto !important;
-}
+        .hero-fullscreen { height:100vh; background:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600') center center / cover no-repeat; position:relative; }
+        .hero-overlay { position:absolute; inset:0; background:linear-gradient(135deg,rgba(192,57,43,0.75),rgba(243,156,18,0.6)); display:flex; align-items:center; justify-content:center; }
+        .hero-content h1 { font-size:52px; font-weight:700; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,0.3); }
+        .hero-content p { font-size:20px; color:rgba(255,255,255,0.9); margin:16px 0 30px; }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(10px)} }
+        main { flex:1; }
     </style>
 </head>
-<body style="display:flex;flex-direction:column;min-height:100vh;">
+<body>
 
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="{{ path('recette_liste') }}">RecipeHub</a>
+        <a class="navbar-brand" href="{{ path('recette_liste') }}">
+            🍽️ Recipe<span>Hub</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
         </button>
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav ms-auto align-items-center gap-2">
-                <li class="nav-item"><a class="nav-link" href="{{ path('recette_liste') }}">Recettes</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('categorie_liste') }}">Catégories</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('tag_liste') }}">Tags</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('recette_liste') }}">
+                        <i class="fas fa-utensils me-1"></i>Recettes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('categorie_liste') }}">
+                        <i class="fas fa-folder me-1"></i>Catégories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('tag_liste') }}">
+                        <i class="fas fa-tags me-1"></i>Tags
+                    </a>
+                </li>
+
                 {% if app.user %}
                     {% if is_granted('ROLE_CUISINIER') %}
-                        <li class="nav-item"><a class="nav-link" href="{{ path('recette_nouvelle') }}">Créer une recette</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-creer" href="{{ path('recette_nouvelle') }}">
+                            <i class="fas fa-plus me-1"></i>Nouvelle recette
+                        </a>
+                    </li>
                     {% endif %}
-                    <li class="nav-item"><span class="nav-link">Bonjour {{ app.user.pseudo }}</span></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                    <li class="nav-item">
+                        <span class="nav-link user-badge">
+                            <i class="fas fa-user-circle me-1" style="color:#e74c3c"></i>
+                            {{ app.user.pseudo }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-connexion" href="{{ path('app_logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+                        </a>
+                    </li>
                 {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_login') }}">Connexion</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_register') }}">Inscription</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-connexion" href="{{ path('app_login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-inscription" href="{{ path('app_register') }}">
+                            <i class="fas fa-user-plus me-1"></i>Inscription
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container mt-4" style="flex:0;">
+<div class="container mt-3">
     {% for type, messages in app.flashes %}
         {% for message in messages %}
             <div class="alert alert-{{ type == 'success' ? 'success' : 'danger' }} alert-dismissible fade show rounded-3">
@@ -130,28 +135,40 @@ body > .container {
     {% endfor %}
 </div>
 
-{% block body %}{% endblock %}
+<main>
+    {% block body %}{% endblock %}
+</main>
 
-<footer class="footer-custom" style="margin-top:0;">
+<footer class="footer-custom">
     <div class="container">
         <div class="row">
             <div class="col-lg-4 mb-4">
-                <h5>RecipeHub</h5>
-                <p style="color:rgba(255,255,255,0.6);font-size:14px;">Partagez vos meilleures recettes avec la communauté. Découvrez des saveurs du monde entier.</p>
+                <h5>🍽️ RecipeHub</h5>
+                <p style="color:rgba(255,255,255,0.6);font-size:14px;">
+                    Partagez vos meilleures recettes avec la communauté. Découvrez des saveurs du monde entier.
+                </p>
             </div>
             <div class="col-lg-4 mb-4">
                 <h5>Navigation</h5>
                 <a href="{{ path('recette_liste') }}">Toutes les recettes</a>
-                <a href="{{ path('recette_nouvelle') }}">Créer une recette</a>
+                {% if is_granted('ROLE_CUISINIER') %}
+                    <a href="{{ path('recette_nouvelle') }}">Créer une recette</a>
+                {% endif %}
                 <a href="{{ path('categorie_liste') }}">Catégories</a>
                 <a href="{{ path('tag_liste') }}">Tags</a>
             </div>
             <div class="col-lg-4 mb-4">
                 <h5>Suivez-nous</h5>
                 <div class="d-flex gap-3 mt-2">
-                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-facebook"></i></a>
-                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-instagram"></i></a>
-                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" style="color:#e74c3c;font-size:24px;display:inline;">
+                        <i class="fab fa-twitter"></i>
+                    </a>
                 </div>
             </div>
         </div>
