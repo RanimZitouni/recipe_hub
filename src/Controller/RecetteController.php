@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\IngredientType;
 use App\Form\RecetteType;
 use App\Repository\RecetteRepository;
+use App\Service\RecetteAnalyser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,19 +15,25 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
+    public function __construct(private RecetteAnalyser $analyser) {}
+
     #[Route('', name: 'recette_liste', methods: ['GET'])]
     public function liste(RecetteRepository $repo): Response
     {
         return $this->render('recette/liste.html.twig', [
-            'recettes' => $repo->findAll(),
+            'recettes'             => $repo->findAll(),
+            'totalPubliees'        => $this->analyser->getTotalRecettesPubliees(),
+            'recettesParCategorie' => $this->analyser->getRecettesParCategorie(),
+            'moyenneIngredients'   => $this->analyser->getMoyenneIngredients(),
         ]);
     }
+
     #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CUISINIER')]
-
     public function nouvelle(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
     {
         $recette = new Recette();
@@ -34,7 +41,6 @@ class RecetteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Gestion image
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();

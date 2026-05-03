@@ -17,6 +17,57 @@
 </div>
 
 <div class="container py-5">
+
+    {# ===== STATS ===== #}
+    <div class="row g-3 mb-5">
+        <div class="col-md-3 col-6">
+            <div class="recipe-card text-center p-4">
+                <div style="font-size:36px">📢</div>
+                <h3 class="fw-bold mt-2" style="color:#e74c3c;">{{ totalPubliees }}</h3>
+                <p class="text-muted mb-0 small">Recettes publiées</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="recipe-card text-center p-4">
+                <div style="font-size:36px">🍽️</div>
+                <h3 class="fw-bold mt-2" style="color:#e74c3c;">{{ recettes|length }}</h3>
+                <p class="text-muted mb-0 small">Total recettes</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="recipe-card text-center p-4">
+                <div style="font-size:36px">🧂</div>
+                <h3 class="fw-bold mt-2" style="color:#e74c3c;">{{ moyenneIngredients }}</h3>
+                <p class="text-muted mb-0 small">Moy. ingrédients</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="recipe-card text-center p-4">
+                <div style="font-size:36px">📂</div>
+                <h3 class="fw-bold mt-2" style="color:#e74c3c;">{{ recettesParCategorie|length }}</h3>
+                <p class="text-muted mb-0 small">Catégories</p>
+            </div>
+        </div>
+    </div>
+
+    {# ===== RECETTES PAR CATEGORIE ===== #}
+    {% if recettesParCategorie %}
+    <div class="form-card mb-5">
+        <h5 class="fw-bold mb-3" style="color:#e74c3c;">
+            <i class="fas fa-chart-bar me-2"></i>Recettes par catégorie
+        </h5>
+        <div class="d-flex flex-wrap gap-2">
+            {% for categorie, nombre in recettesParCategorie %}
+                <span class="badge rounded-pill px-3 py-2"
+                      style="background:#fff0ee;color:#e74c3c;font-size:13px;">
+                    📂 {{ categorie }} — {{ nombre }} recette(s)
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ===== LISTE RECETTES ===== #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="section-title">Toutes les recettes</h2>
         <span class="text-muted">{{ recettes|length }} recette(s)</span>
