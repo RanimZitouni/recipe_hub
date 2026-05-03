@@ -1,40 +1,102 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Inscription{% endblock %}
+{% block title %}Inscription — RecipeHub{% endblock %}
 
 {% block body %}
+
+
+
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <h1 class="h3 mb-4 font-weight-normal text-center">Créer un compte</h1>
+        <div class="col-md-7">
+            <div class="form-card p-5">
 
-                    {{ form_errors(registrationForm) }}
-
-                    {{ form_start(registrationForm) }}
-                        <div class="mb-3">
-                            {{ form_row(registrationForm.pseudo, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_row(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_row(registrationForm.roles) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_row(registrationForm.plainPassword, {
-                                'label': 'Mot de passe',
-                                'attr': {'class': 'form-control'}
-                            }) }}
-                        </div>
-                        <div class="form-check mb-3">
-                            {{ form_row(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 mt-3">S'inscrire</button>
-                    {{ form_end(registrationForm) }}
+                <div class="text-center mb-4">
+                    <div style="font-size:50px"></div>
+                    <h3 class="fw-bold" style="color:#2c3e50">Bienvenue !</h3>
+                    <p class="text-muted">Créez votre compte et partagez vos recettes</p>
                 </div>
+
+                {{ form_errors(registrationForm) }}
+                {{ form_start(registrationForm) }}
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-user me-2" style="color:#e74c3c"></i>Pseudo
+                    </label>
+                    {{ form_widget(registrationForm.pseudo, {
+                        'attr': {'class': 'form-control form-control-lg rounded-3', 'placeholder': 'Votre pseudo'}
+                    }) }}
+                    {{ form_errors(registrationForm.pseudo) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-envelope me-2" style="color:#e74c3c"></i>Email
+                    </label>
+                    {{ form_widget(registrationForm.email, {
+                        'attr': {'class': 'form-control form-control-lg rounded-3', 'placeholder': 'votre@email.com'}
+                    }) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-shield-alt me-2" style="color:#e74c3c"></i>Rôle
+                    </label>
+                    {{ form_widget(registrationForm.roles) }}
+                    {{ form_errors(registrationForm.roles) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-lock me-2" style="color:#e74c3c"></i>Mot de passe
+                    </label>
+                    {{ form_widget(registrationForm.plainPassword.first, {
+                        'attr': {'class': 'form-control form-control-lg rounded-3', 'placeholder': '••••••••'}
+                    }) }}
+                    {{ form_errors(registrationForm.plainPassword.first) }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-lock me-2" style="color:#e74c3c"></i>Confirmer le mot de passe
+                    </label>
+                    {{ form_widget(registrationForm.plainPassword.second, {
+                        'attr': {'class': 'form-control form-control-lg rounded-3', 'placeholder': '••••••••'}
+                    }) }}
+                    {{ form_errors(registrationForm.plainPassword.second) }}
+                </div>
+
+                <div class="mb-4 p-3 rounded-3" style="background:#fff8f8;border:1px solid #fde">
+                    {{ form_widget(registrationForm.agreeTerms, {
+                        'attr': {'class': 'form-check-input'}
+                    }) }}
+                    <label class="form-check-label ms-2">
+                        J'accepte les conditions d'utilisation
+                    </label>
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                </div>
+
+                <button type="submit" class="btn w-100 btn-lg rounded-3 fw-bold"
+                        style="background:#e74c3c;color:#fff;padding:14px;">
+                    <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                </button>
+
+                {{ form_end(registrationForm) }}
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Déjà un compte ?
+                        <a href="{{ path('app_login') }}"
+                           style="color:#e74c3c;font-weight:600;text-decoration:none;">
+                            Se connecter
+                        </a>
+                    </p>
+                </div>
+
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
