@@ -11,10 +11,12 @@ use App\Service\RecetteAnalyser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
+
 
 #[Route('/recettes')]
 class RecetteController extends AbstractController
@@ -22,13 +24,25 @@ class RecetteController extends AbstractController
     public function __construct(private RecetteAnalyser $analyser) {}
 
     #[Route('', name: 'recette_liste', methods: ['GET'])]
-    public function liste(RecetteRepository $repo): Response
+    public function liste(RecetteRepository $repo, Request $request): Response
     {
+        $form = $this->createForm(\App\Form\RecetteFilterType::class, null, ['method' => 'GET']);
+        $form->handleRequest($request);
+
+        $data = $form->getData() ?? [];
+        $titre = $data['titre'] ?? null;
+        $categorie = $data['categorie'] ?? null;
+        $difficulte = $data['difficulte'] ?? null;
+        $tag = $data['tag'] ?? null;
+
+        $recettes = $repo->findByFilters($titre, $categorie, $difficulte, $tag);
+
         return $this->render('recette/liste.html.twig', [
-            'recettes'             => $repo->findAll(),
+            'recettes'             => $recettes,
             'totalPubliees'        => $this->analyser->getTotalRecettesPubliees(),
             'recettesParCategorie' => $this->analyser->getRecettesParCategorie(),
             'moyenneIngredients'   => $this->analyser->getMoyenneIngredients(),
+            'filterForm'           => $form->createView(),
         ]);
     }
 
@@ -62,11 +76,12 @@ class RecetteController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'recette_detail', methods: ['GET'])]
-    public function detail(Recette $recette): Response
+    #[Route('/{id}', name: 'recette_detail', methods: ['GET'], requirements: ['id' => '\\d+'])]
+    public function detail(Recette $recette, RequestStack $requestStack): Response
     {
         return $this->render('recette/detail.html.twig', [
             'recette' => $recette,
+            'isFavori' => $this->isFavori($recette, $requestStack),
         ]);
     }
 
@@ -142,4 +157,92 @@ class RecetteController extends AbstractController
             'recette' => $recette,
         ]);
     }
+ 
+#[Route('/favoris/{id}', name: 'app_favori_add', methods: ['POST'])]
+public function addFavori(
+    Recette $recette,
+    Request $request,
+    RequestStack $requestStack
+): Response {
+
+    if (!$this->isCsrfTokenValid('add_favori' . $recette->getId(), $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    }
+
+    $session = $requestStack->getSession();
+
+    $favoris = $session->get('favoris', []);
+
+    if (!in_array($recette->getId(), $favoris)) {
+        $favoris[] = $recette->getId();
+    }
+
+    $session->set('favoris', $favoris);
+
+    return $this->redirectToRoute('recette_detail', [
+        'id' => $recette->getId()
+    ]);
+}
+
+#[Route('/favoris/{id}/supprimer', name: 'app_favori_remove', methods: ['POST'])]
+public function removeFavori(
+    Recette $recette,
+    Request $request,
+    RequestStack $requestStack
+): Response {
+
+    if (!$this->isCsrfTokenValid('remove_favori' . $recette->getId(), $request->request->get('_token'))) {
+        throw $this->createAccessDeniedException('Token CSRF invalide.');
+    }
+
+    $session = $requestStack->getSession();
+
+    $favoris = $session->get('favoris', []);
+
+    if (($key = array_search($recette->getId(), $favoris)) !== false) {
+        unset($favoris[$key]);
+    }
+
+    $session->set('favoris', array_values($favoris));
+
+    return $this->redirectToRoute('recette_detail', [
+        'id' => $recette->getId()
+    ]);
+}
+
+#[Route('/mes-favoris', name: 'recette_favoris', methods: ['GET'])]
+public function favoris(RecetteRepository $repo, RequestStack $requestStack): Response
+{
+    $session = $requestStack->getSession();
+    $favorisIds = $session->get('favoris', []);
+    
+    $recettes = [];
+    if (!empty($favorisIds)) {
+        // Get recipes and preserve the order from favorites
+        $recettesEntities = $repo->findBy(['id' => $favorisIds]);
+        
+        // Sort recipes to match the order in favorites
+        $recettesMap = [];
+        foreach ($recettesEntities as $recette) {
+            $recettesMap[$recette->getId()] = $recette;
+        }
+        
+        foreach ($favorisIds as $id) {
+            if (isset($recettesMap[$id])) {
+                $recettes[] = $recettesMap[$id];
+            }
+        }
+    }
+
+    return $this->render('recette/favoris.html.twig', [
+        'recettes' => $recettes,
+    ]);
+}
+
+private function isFavori(Recette $recette, RequestStack $requestStack): bool
+{
+    $session = $requestStack->getSession();
+    $favoris = $session->get('favoris', []);
+    return in_array($recette->getId(), $favoris);
+}
 }

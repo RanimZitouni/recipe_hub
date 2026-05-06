@@ -67,6 +67,37 @@
     </div>
     {% endif %}
 
+    {# ===== FILTRE RECETTES ===== #}
+    <div class="form-card mb-4">
+        <h5 class="fw-bold mb-3" style="color:#e74c3c;">
+            <i class="fas fa-filter me-2"></i>Filtrer les recettes
+        </h5>
+        {{ form_start(filterForm, {'method':'GET', 'attr': {'class':'row g-3 align-items-end'}}) }}
+            <div class="col-md-3">
+                <small class="text-muted d-block mb-1">Titre</small>
+                {{ form_widget(filterForm.titre, {'attr': {'class':'form-control', 'placeholder':'Titre...'}}) }}
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block mb-1">Catégorie</small>
+                {{ form_widget(filterForm.categorie, {'attr': {'class':'form-select'}}) }}
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block mb-1">Difficulté</small>
+                {{ form_widget(filterForm.difficulte, {'attr': {'class':'form-select'}}) }}
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block mb-1">Tag</small>
+                {{ form_widget(filterForm.tag, {'attr': {'class':'form-select'}}) }}
+            </div>
+            <div class="col-md-2 text-end">
+                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+            </div>
+            <div class="col-12">
+                <a href="{{ path('recette_liste') }}" class="btn btn-link btn-sm">Réinitialiser les filtres</a>
+            </div>
+        {{ form_end(filterForm) }}
+    </div>
+
     {# ===== LISTE RECETTES ===== #}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="section-title">Toutes les recettes</h2>
@@ -124,11 +155,10 @@
                             <a href="{{ path('recette_modifier', {id: recette.id}) }}" class="btn-modifier">
                                 <i class="fas fa-edit me-1"></i>Modifier
                             </a>
-                            <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}"
-                                  onsubmit="return confirm('Supprimer ?')">
+                            <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}" style="display:inline;">
                                 <input type="hidden" name="_token"
                                        value="{{ csrf_token('supprimer' ~ recette.id) }}">
-                                <button class="btn-suppr"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn-suppr" data-confirm-delete="Êtes-vous sûr de vouloir supprimer cette recette ?"><i class="fas fa-trash"></i></button>
                             </form>
                         {% endif %}
                     </div>

@@ -16,6 +16,9 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'sweetalert2' => [
+        'version' => '11.10.8',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
