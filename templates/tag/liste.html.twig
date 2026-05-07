@@ -36,10 +36,10 @@
                 {% if is_granted('ROLE_ADMIN') %}
                 <form method="post"
                       action="{{ path('tag_supprimer', {id: tag.id}) }}"
-                      onsubmit="return confirm('Supprimer ce tag ?')">
+                      style="display:inline;">
                     <input type="hidden" name="_token"
                            value="{{ csrf_token('supprimer' ~ tag.id) }}">
-                    <button class="btn-suppr w-100">
+                    <button type="button" class="btn-suppr w-100" data-confirm-delete="Êtes-vous sûr de vouloir supprimer ce tag ?">
                         <i class="fas fa-trash me-2"></i>Supprimer
                     </button>
                 </form>
