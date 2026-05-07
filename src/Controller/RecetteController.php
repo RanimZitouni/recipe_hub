@@ -1,6 +1,5 @@
 <?php
 namespace App\Controller;
-
 use App\Entity\Ingredient;
 use App\Entity\Recette;
 use App\Entity\User;
@@ -16,13 +15,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
-
+use App\Service\RecetteMailer;
 
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
-    public function __construct(private RecetteAnalyser $analyser) {}
-
+    public function __construct(private RecetteAnalyser $analyser , private RecetteMailer $recetteMailer) {}
+    
     #[Route('', name: 'recette_liste', methods: ['GET'])]
     public function liste(RecetteRepository $repo, Request $request): Response
     {
@@ -45,36 +44,48 @@ class RecetteController extends AbstractController
             'filterForm'           => $form->createView(),
         ]);
     }
+#[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
+#[IsGranted('ROLE_CUISINIER')]
+public function nouvelle(
+    Request $request,
+    EntityManagerInterface $em,
+    SluggerInterface $slugger
+): Response {
+    $recette = new Recette();
+    $form = $this->createForm(RecetteType::class, $recette);
+    $form->handleRequest($request);
 
-    #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_CUISINIER')]
-    public function nouvelle(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
-    {
-        $recette = new Recette();
-        $form = $this->createForm(RecetteType::class, $recette);
-        $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('imageFile')->getData();
-            if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move($this->getParameter('images_directory'), $newFilename);
-                $recette->setImageName($newFilename);
-            }
+        $imageFile = $form->get('imageFile')->getData();
 
-            $recette->setAuteur($this->getUser());
-            $em->persist($recette);
-            $em->flush();
-
-            $this->addFlash('success', 'Recette créée avec succès !');
-            return $this->redirectToRoute('recette_liste');
+        if ($imageFile) {
+            $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+            $imageFile->move($this->getParameter('images_directory'), $newFilename);
+            $recette->setImageName($newFilename);
         }
 
-        return $this->render('recette/form.html.twig', [
-            'form' => $form,
-            'titre' => 'Nouvelle recette',
-        ]);
+        $recette->setAuteur($this->getUser());
+        $em->persist($recette);
+        $em->flush();
+        try {
+            $this->recetteMailer->sendNouvelleRecetteEmail(
+                $recette,
+                'admin@recipehub.com'
+            );
+        } catch (\Exception $e) {
+            dd($e->getMessage()); 
+        }
+
+        $this->addFlash('success', 'Recette créée avec succès !');
+        return $this->redirectToRoute('recette_liste');
     }
+    
+    return $this->render('recette/form.html.twig', [
+        'form' => $form,
+        'titre' => 'Nouvelle recette',
+    ]);
+}
 
     #[Route('/{id}', name: 'recette_detail', methods: ['GET'], requirements: ['id' => '\\d+'])]
     public function detail(Recette $recette, RequestStack $requestStack): Response
