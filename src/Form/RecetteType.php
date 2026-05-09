@@ -14,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
 
 class RecetteType extends AbstractType
 {
@@ -78,18 +77,11 @@ class RecetteType extends AbstractType
                 'attr' => ['class' => 'form-check-input']
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Image (JPEG, PNG, WebP)',
+                'label' => 'Image (optionnel)',
                 'mapped' => false,
                 'required' => false,
-                'constraints' => [
-                    new File([
-                        'maxSize' => '2M',
-                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
-                        'mimeTypesMessage' => 'Formats acceptés : JPEG, PNG, WebP',
-                        'maxSizeMessage' => 'La taille maximale est 2 Mo',
-                    ])
-                ],
-                'attr' => ['class' => 'form-control']
+                'constraints' => [],
+                'attr' => ['class' => 'form-control', 'accept' => 'image/*']
             ]);
     }
 
