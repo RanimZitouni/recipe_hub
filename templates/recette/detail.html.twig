@@ -9,16 +9,11 @@
         </a>
         <h1 class="mt-2">{{ recette.titre }}</h1>
         <div class="d-flex align-items-center gap-3 mt-2">
-            {% if recette.difficulte == 'facile' %}
-                <span class="badge-facile">🟢 Facile</span>
-            {% elseif recette.difficulte == 'moyen' %}
-                <span class="badge-moyen">🟡 Moyen</span>
-            {% else %}
-                <span class="badge-difficile">🔴 Difficile</span>
-            {% endif %}
+            <span class="badge bg-light text-dark">{{ difficulty_stars(recette.difficulte) }}</span>
             {% if recette.categorie %}
                 <span style="color:rgba(255,255,255,0.8)">{{ recette.categorie.icone }} {{ recette.categorie.nom }}</span>
             {% endif %}
+            <span style="color:rgba(255,255,255,0.8)">📅 {{ recette.dateCreation|time_ago }}</span>
             {% if app.user %}
                 {% if isFavori %}
                     <form method="post" action="{{ path('app_favori_remove', {id: recette.id}) }}" style="display:inline;">
@@ -52,7 +47,7 @@
         <div class="col-auto">
             <div class="form-card text-center px-4">
                 <div style="font-size:24px">⏱️</div>
-                <div class="fw-bold">{{ recette.tempsPreparation }} min</div>
+                <div class="fw-bold">{{ recette.tempsPreparation|cooking_time_format }}</div>
                 <div class="text-muted small">Préparation</div>
             </div>
         </div>
@@ -60,7 +55,7 @@
         <div class="col-auto">
             <div class="form-card text-center px-4">
                 <div style="font-size:24px">🔥</div>
-                <div class="fw-bold">{{ recette.tempsCuisson }} min</div>
+                <div class="fw-bold">{{ recette.tempsCuisson|cooking_time_format }}</div>
                 <div class="text-muted small">Cuisson</div>
             </div>
         </div>
