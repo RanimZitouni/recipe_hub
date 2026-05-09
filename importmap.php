@@ -17,7 +17,7 @@ return [
         'entrypoint' => true,
     ],
     'sweetalert2' => [
-        'version' => '11.10.8',
+        'version' => '11.26.24',
     ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',

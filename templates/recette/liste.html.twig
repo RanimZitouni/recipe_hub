@@ -109,11 +109,17 @@
         <div class="col-xl-4 col-lg-4 col-md-6">
             <div class="recipe-card h-100">
                 {% if recette.imageName %}
-                    <img src="{{ asset('uploads/images/' ~ recette.imageName) }}"
-                         class="card-img-top" alt="{{ recette.titre }}">
-                {% else %}
-                    <div class="card-img-placeholder">🍽️</div>
-                {% endif %}
+    <img src="{{ asset('uploads/recettes/' ~ recette.imageName) }}"
+         class="card-img-top" alt="{{ recette.titre }}">
+{% else %}
+    <div class="card-img-placeholder">
+        {% if recette.categorie and recette.categorie.icone %}
+            {{ recette.categorie.icone }}
+        {% else %}
+            🍽️
+        {% endif %}
+    </div>
+{% endif %}
 
                 <div class="p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes Favoris — RecipeHub{% endblock %}
+
+{% block body %}
+<div class="page-header">
+    <div class="container">
+        <h1>⭐ Mes Recettes Favorites</h1>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        {% for recette in recettes %}
+        <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="recipe-card h-100">
+                {% if recette.imageName %}
+                    <img src="{{ asset('uploads/recettes/' ~ recette.imageName) }}"
+                         class="card-img-top" alt="{{ recette.titre }}">
+                {% else %}
+                    <div class="card-img-placeholder">
+                        {{ recette.categorie ? recette.categorie.icone : '🍽️' }}
+                    </div>
+                {% endif %}
+                <div class="p-4">
+                    <h5 class="fw-bold" style="color:#2c3e50">{{ recette.titre }}</h5>
+                    <p class="card-meta">
+                        ⏱️ {{ recette.tempsPreparation + (recette.tempsCuisson ?? 0) }} min
+                        | 👥 {{ recette.nbPersonnes }} pers.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{{ path('recette_detail', {id: recette.id}) }}" class="btn-voir">
+                            <i class="fas fa-eye me-1"></i>Voir
+                        </a>
+                        <form method="post" action="{{ path('app_favori_remove', {id: recette.id}) }}">
+                            <input type="hidden" name="_token"
+                                   value="{{ csrf_token('remove_favori' ~ recette.id) }}"
+                            <button class="btn-suppr">❌ Retirer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div style="font-size:80px">⭐</div>
+            <h4 class="mt-3 text-muted">Aucun favori pour le moment</h4>
+            <a href="{{ path('recette_liste') }}" class="btn-voir mt-3 d-inline-block">
+                Découvrir des recettes
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

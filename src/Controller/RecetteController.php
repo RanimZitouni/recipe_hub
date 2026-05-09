@@ -1,5 +1,6 @@
 <?php
 namespace App\Controller;
+
 use App\Entity\Ingredient;
 use App\Entity\Recette;
 use App\Entity\User;
@@ -7,97 +8,111 @@ use App\Form\IngredientType;
 use App\Form\RecetteType;
 use App\Repository\RecetteRepository;
 use App\Service\RecetteAnalyser;
+use App\Service\RecetteMailer;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use App\Service\RecetteMailer;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\RequestStack;
+use App\Form\RecetteFilterType;
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
-    public function __construct(private RecetteAnalyser $analyser , private RecetteMailer $recetteMailer) {}
-    
+    public function __construct(
+        private RecetteAnalyser $analyser,
+        private RecetteMailer $recetteMailer,
+        private FileUploader $fileUploader,
+    ) {}
+
     #[Route('', name: 'recette_liste', methods: ['GET'])]
-    public function liste(RecetteRepository $repo, Request $request): Response
-    {
-        $form = $this->createForm(\App\Form\RecetteFilterType::class, null, ['method' => 'GET']);
-        $form->handleRequest($request);
+public function liste(RecetteRepository $repo, Request $request): Response
+{
+    $filterForm = $this->createForm(RecetteFilterType::class, null, [
+        'method' => 'GET',
+        'csrf_protection' => false,
+    ]);
+    $filterForm->handleRequest($request);
 
-        $data = $form->getData() ?? [];
-        $titre = $data['titre'] ?? null;
-        $categorie = $data['categorie'] ?? null;
-        $difficulte = $data['difficulte'] ?? null;
-        $tag = $data['tag'] ?? null;
+    $recettes = $repo->findAll();
 
-        $recettes = $repo->findByFilters($titre, $categorie, $difficulte, $tag);
-
-        return $this->render('recette/liste.html.twig', [
-            'recettes'             => $recettes,
-            'totalPubliees'        => $this->analyser->getTotalRecettesPubliees(),
-            'recettesParCategorie' => $this->analyser->getRecettesParCategorie(),
-            'moyenneIngredients'   => $this->analyser->getMoyenneIngredients(),
-            'filterForm'           => $form->createView(),
-        ]);
+    if ($filterForm->isSubmitted() && $filterForm->isValid()) {
+        $data = $filterForm->getData();
+        $recettes = $repo->findByFilters(
+            $data['titre'] ?? null,
+            $data['categorie'] ?? null,
+            $data['difficulte'] ?? null,
+            $data['tag'] ?? null
+        );
     }
-#[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
-#[IsGranted('ROLE_CUISINIER')]
-public function nouvelle(
-    Request $request,
-    EntityManagerInterface $em,
-    SluggerInterface $slugger
-): Response {
-    $recette = new Recette();
-    $form = $this->createForm(RecetteType::class, $recette);
-    $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-
-        $imageFile = $form->get('imageFile')->getData();
-
-        if ($imageFile) {
-            $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-            $imageFile->move($this->getParameter('images_directory'), $newFilename);
-            $recette->setImageName($newFilename);
-        }
-
-        $recette->setAuteur($this->getUser());
-        $em->persist($recette);
-        $em->flush();
-        try {
-            $this->recetteMailer->sendNouvelleRecetteEmail(
-                $recette,
-                'admin@recipehub.com'
-            );
-        } catch (\Exception $e) {
-            dd($e->getMessage()); 
-        }
-
-        $this->addFlash('success', 'Recette créée avec succès !');
-        return $this->redirectToRoute('recette_liste');
-    }
-    
-    return $this->render('recette/form.html.twig', [
-        'form' => $form,
-        'titre' => 'Nouvelle recette',
+    return $this->render('recette/liste.html.twig', [
+        'recettes'             => $recettes,
+        'filterForm'           => $filterForm->createView(),
+        'totalPubliees'        => $this->analyser->getTotalRecettesPubliees(),
+        'recettesParCategorie' => $this->analyser->getRecettesParCategorie(),
+        'moyenneIngredients'   => $this->analyser->getMoyenneIngredients(),
     ]);
 }
 
-    #[Route('/{id}', name: 'recette_detail', methods: ['GET'], requirements: ['id' => '\\d+'])]
-    public function detail(Recette $recette, RequestStack $requestStack): Response
+    #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_CUISINIER')]
+    public function nouvelle(Request $request, EntityManagerInterface $em): Response
     {
-        return $this->render('recette/detail.html.twig', [
-            'recette' => $recette,
-            'isFavori' => $this->isFavori($recette, $requestStack),
+        $recette = new Recette();
+        $form = $this->createForm(RecetteType::class, $recette);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Upload image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $fileName = $this->fileUploader->upload($imageFile);
+                $recette->setImageName($fileName);
+            }
+
+            $recette->setAuteur($this->getUser());
+            $em->persist($recette);
+            $em->flush();
+
+            // Email si publiée
+            if ($recette->isPubliee()) {
+                try {
+                    $this->recetteMailer->sendNouvelleRecetteEmail(
+                        $recette,
+                        'admin@recipehub.com'
+                    );
+                } catch (\Exception $e) {}
+            }
+
+            $this->addFlash('success', 'Recette créée avec succès !');
+            return $this->redirectToRoute('recette_liste');
+        }
+
+        return $this->render('recette/form.html.twig', [
+            'form'  => $form,
+            'titre' => 'Nouvelle recette',
         ]);
     }
 
+    #[Route('/{id}', name: 'recette_detail', methods: ['GET'])]
+public function detail(Recette $recette, RequestStack $requestStack): Response
+{
+    $session = $requestStack->getSession();
+    $favoris = $session->get('favoris', []);
+    $isFavori = in_array($recette->getId(), $favoris);
+
+    return $this->render('recette/detail.html.twig', [
+        'recette'  => $recette,
+        'isFavori' => $isFavori,
+    ]);
+}
+
     #[Route('/{id}/modifier', name: 'recette_modifier', methods: ['GET', 'POST'])]
-    public function modifier(Request $request, Recette $recette, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function modifier(Request $request, Recette $recette, EntityManagerInterface $em): Response
     {
         $currentUser = $this->getUser();
         if (!$currentUser instanceof User || (!$this->isGranted('ROLE_ADMIN') && $recette->getAuteur()?->getId() !== $currentUser->getId())) {
@@ -110,9 +125,13 @@ public function nouvelle(
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move($this->getParameter('images_directory'), $newFilename);
-                $recette->setImageName($newFilename);
+                // Supprime l'ancienne image
+                if ($recette->getImageName()) {
+                    $this->fileUploader->remove($recette->getImageName());
+                }
+                // Upload la nouvelle
+                $fileName = $this->fileUploader->upload($imageFile);
+                $recette->setImageName($fileName);
             }
 
             $em->flush();
@@ -121,8 +140,8 @@ public function nouvelle(
         }
 
         return $this->render('recette/form.html.twig', [
-            'form' => $form,
-            'titre' => 'Modifier la recette',
+            'form'    => $form,
+            'titre'   => 'Modifier la recette',
             'recette' => $recette,
         ]);
     }
@@ -136,6 +155,10 @@ public function nouvelle(
         }
 
         if ($this->isCsrfTokenValid('supprimer' . $recette->getId(), $request->request->get('_token'))) {
+            // Supprime le fichier image physique
+            if ($recette->getImageName()) {
+                $this->fileUploader->remove($recette->getImageName());
+            }
             $em->remove($recette);
             $em->flush();
             $this->addFlash('success', 'Recette supprimée avec succès !');
@@ -164,96 +187,8 @@ public function nouvelle(
         }
 
         return $this->render('ingredient/form.html.twig', [
-            'form' => $form,
+            'form'    => $form,
             'recette' => $recette,
         ]);
     }
- 
-#[Route('/favoris/{id}', name: 'app_favori_add', methods: ['POST'])]
-public function addFavori(
-    Recette $recette,
-    Request $request,
-    RequestStack $requestStack
-): Response {
-
-    if (!$this->isCsrfTokenValid('add_favori' . $recette->getId(), $request->request->get('_token'))) {
-        throw $this->createAccessDeniedException('Token CSRF invalide.');
-    }
-
-    $session = $requestStack->getSession();
-
-    $favoris = $session->get('favoris', []);
-
-    if (!in_array($recette->getId(), $favoris)) {
-        $favoris[] = $recette->getId();
-    }
-
-    $session->set('favoris', $favoris);
-
-    return $this->redirectToRoute('recette_detail', [
-        'id' => $recette->getId()
-    ]);
-}
-
-#[Route('/favoris/{id}/supprimer', name: 'app_favori_remove', methods: ['POST'])]
-public function removeFavori(
-    Recette $recette,
-    Request $request,
-    RequestStack $requestStack
-): Response {
-
-    if (!$this->isCsrfTokenValid('remove_favori' . $recette->getId(), $request->request->get('_token'))) {
-        throw $this->createAccessDeniedException('Token CSRF invalide.');
-    }
-
-    $session = $requestStack->getSession();
-
-    $favoris = $session->get('favoris', []);
-
-    if (($key = array_search($recette->getId(), $favoris)) !== false) {
-        unset($favoris[$key]);
-    }
-
-    $session->set('favoris', array_values($favoris));
-
-    return $this->redirectToRoute('recette_detail', [
-        'id' => $recette->getId()
-    ]);
-}
-
-#[Route('/mes-favoris', name: 'recette_favoris', methods: ['GET'])]
-public function favoris(RecetteRepository $repo, RequestStack $requestStack): Response
-{
-    $session = $requestStack->getSession();
-    $favorisIds = $session->get('favoris', []);
-    
-    $recettes = [];
-    if (!empty($favorisIds)) {
-        // Get recipes and preserve the order from favorites
-        $recettesEntities = $repo->findBy(['id' => $favorisIds]);
-        
-        // Sort recipes to match the order in favorites
-        $recettesMap = [];
-        foreach ($recettesEntities as $recette) {
-            $recettesMap[$recette->getId()] = $recette;
-        }
-        
-        foreach ($favorisIds as $id) {
-            if (isset($recettesMap[$id])) {
-                $recettes[] = $recettesMap[$id];
-            }
-        }
-    }
-
-    return $this->render('recette/favoris.html.twig', [
-        'recettes' => $recettes,
-    ]);
-}
-
-private function isFavori(Recette $recette, RequestStack $requestStack): bool
-{
-    $session = $requestStack->getSession();
-    $favoris = $session->get('favoris', []);
-    return in_array($recette->getId(), $favoris);
-}
 }

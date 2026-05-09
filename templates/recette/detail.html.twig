@@ -42,11 +42,11 @@
 
 <div class="container pb-5">
     {% if recette.imageName %}
-        <img src="{{ asset('uploads/images/' ~ recette.imageName) }}"
-             class="img-fluid rounded-4 w-100 mb-4"
-             style="max-height:450px;object-fit:cover;"
-             alt="{{ recette.titre }}">
-    {% endif %}
+    <img src="{{ asset('uploads/recettes/' ~ recette.imageName) }}"
+         class="img-fluid rounded-4 w-100 mb-4"
+         style="max-height:450px;object-fit:cover;"
+         alt="{{ recette.titre }}">
+{% endif %}
 
     <div class="row mb-4">
         <div class="col-auto">
