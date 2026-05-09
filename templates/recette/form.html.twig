@@ -15,6 +15,15 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="form-card">
+                {% if form.vars.errors|length > 0 %}
+                    <div class="alert alert-danger">
+                        <strong>Erreurs de formulaire:</strong>
+                        {% for error in form.vars.errors %}
+                            <div>{{ error.message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
                 {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation'}}) }}
                 <div class="row g-3">
                     <div class="col-12">{{ form_row(form.titre) }}</div>

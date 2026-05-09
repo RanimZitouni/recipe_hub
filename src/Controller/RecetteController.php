@@ -19,6 +19,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\RequestStack;
 use App\Form\RecetteFilterType;
+use Knp\Component\Pager\PaginatorInterface;
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
@@ -29,7 +30,7 @@ class RecetteController extends AbstractController
     ) {}
 
     #[Route('', name: 'recette_liste', methods: ['GET'])]
-public function liste(RecetteRepository $repo, Request $request): Response
+public function liste(RecetteRepository $repo, Request $request, PaginatorInterface $paginator): Response
 {
     $filterForm = $this->createForm(RecetteFilterType::class, null, [
         'method' => 'GET',
@@ -37,20 +38,38 @@ public function liste(RecetteRepository $repo, Request $request): Response
     ]);
     $filterForm->handleRequest($request);
 
-    $recettes = $repo->findAll();
+    // Build a query builder so paginator can sort and paginate
+    $qb = $repo->createQueryBuilder('r');
 
     if ($filterForm->isSubmitted() && $filterForm->isValid()) {
         $data = $filterForm->getData();
-        $recettes = $repo->findByFilters(
-            $data['titre'] ?? null,
-            $data['categorie'] ?? null,
-            $data['difficulte'] ?? null,
-            $data['tag'] ?? null
-        );
+        if (!empty($data['titre'])) {
+            $qb->andWhere('r.titre LIKE :titre')->setParameter('titre', '%' . $data['titre'] . '%');
+        }
+        if (!empty($data['categorie'])) {
+            $qb->andWhere('r.categorie = :cat')->setParameter('cat', $data['categorie']);
+        }
+        if (!empty($data['difficulte'])) {
+            $qb->andWhere('r.difficulte = :diff')->setParameter('diff', $data['difficulte']);
+        }
+        if (!empty($data['tag'])) {
+            $qb->innerJoin('r.tags', 't')->andWhere('t = :tag')->setParameter('tag', $data['tag']);
+        }
     }
 
+    $qb->orderBy('r.dateCreation', 'DESC');
+
+    $page = $request->query->getInt('page', 1);
+    $pagination = $paginator->paginate(
+        $qb,
+        $page,
+        9,
+        ['defaultSortFieldName' => 'r.titre', 'defaultSortDirection' => 'ASC']
+    );
+
     return $this->render('recette/liste.html.twig', [
-        'recettes'             => $recettes,
+        'recettes'             => $pagination,
+        'pagination'           => $pagination,
         'filterForm'           => $filterForm->createView(),
         'totalPubliees'        => $this->analyser->getTotalRecettesPubliees(),
         'recettesParCategorie' => $this->analyser->getRecettesParCategorie(),
@@ -67,7 +86,7 @@ public function liste(RecetteRepository $repo, Request $request): Response
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Upload image
+            // Upload image if provided
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {
                 $fileName = $this->fileUploader->upload($imageFile);
