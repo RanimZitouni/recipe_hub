@@ -3,11 +3,10 @@
 
 {% block body %}
 
-
-
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="section-title">Toutes les catégories</h2>
+
         {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('categorie_nouvelle') }}" class="btn-voir">
                 <i class="fas fa-plus me-2"></i>Nouvelle catégorie
@@ -19,34 +18,73 @@
         {% for categorie in categories %}
         <div class="col-xl-4 col-lg-4 col-md-6">
             <div class="recipe-card h-100 text-center p-4">
+
                 <div style="font-size:60px;margin-bottom:16px;">
                     {{ categorie.icone }}
                 </div>
-                <h4 class="fw-bold" style="color:#2c3e50">{{ categorie.nom }}</h4>
+
+                <h4 class="fw-bold" style="color:#2c3e50">
+                    {{ categorie.nom }}
+                </h4>
+
                 {% if categorie.description %}
-                    <p class="text-muted small mt-2">{{ categorie.description }}</p>
+                    <p class="text-muted small mt-2">
+                        {{ categorie.description }}
+                    </p>
                 {% endif %}
+
                 <div class="mt-3">
                     <span class="badge rounded-pill px-3 py-2"
                           style="background:#fff0ee;color:#e74c3c;font-size:13px;font-weight:600;">
                         🍽️ {{ categorie.recettes|length }} recette(s)
                     </span>
                 </div>
+
                 <div class="mt-3">
                     <a href="{{ path('recette_liste') }}"
                        class="btn-voir" style="font-size:13px;">
                         <i class="fas fa-eye me-1"></i>Voir les recettes
                     </a>
                 </div>
+
+                {# 🔥 AJOUT BUTTONS ADMIN #}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <div class="mt-3 d-flex justify-content-center gap-2">
+
+                        <a href="{{ path('categorie_modifier', {'id': categorie.id}) }}"
+                           class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+
+                        <form method="post"
+      action="{{ path('categorie_supprimer', {'id': categorie.id}) }}"
+      class="delete-form">
+
+    <input type="hidden" name="_token"
+           value="{{ csrf_token('delete' ~ categorie.id) }}">
+
+    <button type="button"
+            class="btn btn-danger btn-sm delete-btn"
+            data-name="{{ categorie.nom }}">
+        <i class="fas fa-trash"></i> Supprimer
+    </button>
+</form>
+
+                    </div>
+                {% endif %}
+
             </div>
         </div>
+
         {% else %}
         <div class="col-12">
             <div class="text-center py-5">
                 <div style="font-size:80px">📂</div>
                 <h4 class="mt-3 text-muted">Aucune catégorie pour le moment</h4>
+
                 {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('categorie_nouvelle') }}" class="btn-voir mt-3 d-inline-block">
+                    <a href="{{ path('categorie_nouvelle') }}"
+                       class="btn-voir mt-3 d-inline-block">
                         <i class="fas fa-plus me-2"></i>Créer une catégorie
                     </a>
                 {% endif %}

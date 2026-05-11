@@ -5,21 +5,22 @@ use App\Entity\Ingredient;
 use App\Entity\Recette;
 use App\Entity\User;
 use App\Form\IngredientType;
+use App\Form\RecetteFilterType;
 use App\Form\RecetteType;
 use App\Repository\RecetteRepository;
+use App\Service\FileUploader;
 use App\Service\RecetteAnalyser;
 use App\Service\RecetteMailer;
-use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\HttpFoundation\RequestStack;
-use App\Form\RecetteFilterType;
-use Knp\Component\Pager\PaginatorInterface;
+
 #[Route('/recettes')]
 class RecetteController extends AbstractController
 {
@@ -27,6 +28,7 @@ class RecetteController extends AbstractController
         private RecetteAnalyser $analyser,
         private RecetteMailer $recetteMailer,
         private FileUploader $fileUploader,
+        private EventDispatcherInterface $dispatcher
     ) {}
 
     #[Route('', name: 'recette_liste', methods: ['GET'])]
@@ -79,43 +81,46 @@ public function liste(RecetteRepository $repo, Request $request, PaginatorInterf
 
     #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_CUISINIER')]
-    public function nouvelle(Request $request, EntityManagerInterface $em): Response
-    {
-        $recette = new Recette();
-        $form = $this->createForm(RecetteType::class, $recette);
-        $form->handleRequest($request);
+   #[Route('/nouvelle', name: 'recette_nouvelle', methods: ['GET', 'POST'])]
+#[IsGranted('ROLE_CUISINIER')]
+public function nouvelle(Request $request, EntityManagerInterface $em): Response
+{
+    $recette = new Recette();
+    $form = $this->createForm(RecetteType::class, $recette);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Upload image if provided
-            $imageFile = $form->get('imageFile')->getData();
-            if ($imageFile) {
-                $fileName = $this->fileUploader->upload($imageFile);
-                $recette->setImageName($fileName);
-            }
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            $recette->setAuteur($this->getUser());
-            $em->persist($recette);
-            $em->flush();
-
-            // Email si publiée
-            if ($recette->isPubliee()) {
-                try {
-                    $this->recetteMailer->sendNouvelleRecetteEmail(
-                        $recette,
-                        'admin@recipehub.com'
-                    );
-                } catch (\Exception $e) {}
-            }
-
-            $this->addFlash('success', 'Recette créée avec succès !');
-            return $this->redirectToRoute('recette_liste');
+        $imageFile = $form->get('imageFile')->getData();
+        if ($imageFile) {
+            $fileName = $this->fileUploader->upload($imageFile);
+            $recette->setImageName($fileName);
         }
 
-        return $this->render('recette/form.html.twig', [
-            'form'  => $form,
-            'titre' => 'Nouvelle recette',
-        ]);
+        $recette->setAuteur($this->getUser());
+
+        $em->persist($recette);
+        $em->flush();
+        $event = new \App\Event\RecipeCreatedEvent($recette);
+        $this->dispatcher->dispatch($event);
+        if ($recette->isPubliee()) {
+            try {
+                $this->recetteMailer->sendNouvelleRecetteEmail(
+                    $recette,
+                    'admin@recipehub.com'
+                );
+            } catch (\Exception $e) {}
+        }
+
+        $this->addFlash('success', 'Recette créée avec succès !');
+        return $this->redirectToRoute('recette_liste');
     }
+
+    return $this->render('recette/form.html.twig', [
+        'form'  => $form,
+        'titre' => 'Nouvelle recette',
+    ]);
+}
 
     #[Route('/{id}', name: 'recette_detail', methods: ['GET'])]
 public function detail(Recette $recette, RequestStack $requestStack): Response
