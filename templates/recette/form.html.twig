@@ -24,7 +24,7 @@
                     </div>
                 {% endif %}
                 
-                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation'}}) }}
+                {{ form_start(form, {'attr': {'class': 'needs-validation'}, 'multipart': true}) }}
                 <div class="row g-3">
                     <div class="col-12">{{ form_row(form.titre) }}</div>
                     <div class="col-12">{{ form_row(form.description) }}</div>

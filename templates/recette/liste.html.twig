@@ -173,11 +173,10 @@
                             <form method="post" action="{{ path('recette_supprimer', {id: recette.id}) }}" style="display:inline;">
                                 <input type="hidden" name="_token"
                                        value="{{ csrf_token('supprimer' ~ recette.id) }}">
-                                <button type="button" class="btn-suppr" 
-        data-confirm-delete="Supprimer cette recette ?">
-    <i class="fas fa-trash"></i>
-</button>
-
+                                <button type="button" class="btn-suppr" data-confirm-delete="Supprimer cette recette ?">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         {% endif %}
                     </div>
                 </div>
