@@ -34,6 +34,13 @@ class RecetteController extends AbstractController
     #[Route('', name: 'recette_liste', methods: ['GET'])]
 public function liste(RecetteRepository $repo, Request $request, PaginatorInterface $paginator): Response
 {
+    // If no explicit sort is provided in the query, enforce newest-first sorting
+    if (!$request->query->has('sort')) {
+        $params = $request->query->all();
+        $params['sort'] = 'r.dateCreation';
+        $params['direction'] = 'DESC';
+        return $this->redirectToRoute('recette_liste', $params);
+    }
     $filterForm = $this->createForm(RecetteFilterType::class, null, [
         'method' => 'GET',
         'csrf_protection' => false,
@@ -65,8 +72,8 @@ public function liste(RecetteRepository $repo, Request $request, PaginatorInterf
     $pagination = $paginator->paginate(
         $qb,
         $page,
-        9,
-        ['defaultSortFieldName' => 'r.titre', 'defaultSortDirection' => 'ASC']
+        6,
+        ['defaultSortFieldName' => 'r.dateCreation', 'defaultSortDirection' => 'DESC']
     );
 
     return $this->render('recette/liste.html.twig', [
